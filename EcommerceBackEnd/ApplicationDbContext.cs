@@ -9,6 +9,7 @@ namespace EcommerceBackEnd
         {
         }
 
+        // DB sets to handle data from database
         public DbSet<ShoesEntity> ShoesDBTable { get; set; }
     }
 }

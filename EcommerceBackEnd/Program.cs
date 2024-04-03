@@ -23,6 +23,8 @@ namespace EcommerceBackEnd
             {
                 options.UseSqlServer(connectionString);
             });
+            // // Automapper
+            builder.Services.AddAutoMapper(typeof(Program));
             // // CORS
             builder.Services.AddCors(options =>
             {
@@ -31,17 +33,18 @@ namespace EcommerceBackEnd
                     builder.WithOrigins(MyAllowOrigin).AllowAnyMethod().AllowAnyHeader();
                 });
             });
-
             // // swagger 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
+
             // MIDDLEWARES
 
             if (app.Environment.IsDevelopment())
             {
+                // swagger for development envriroment
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
