@@ -1,4 +1,5 @@
 
+using EcommerceBackEnd.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace EcommerceBackEnd
@@ -11,11 +12,15 @@ namespace EcommerceBackEnd
             var builder = WebApplication.CreateBuilder(args);
             var MyAllowOrigin = "http://localhost:5173"; // my react app localhost
             var configuration = builder.Configuration;
-            var connectionString = configuration.GetConnectionString("defaultConnection");
+            //connection string from secrets
+            var connectionString = configuration["ConnectionStrings:DefaultConnection"];
+            //var connectionString = configuration.GetConnectionString("defaultConnection");
+
+            Console.WriteLine(connectionString);
 
 
             // SERVICES
-            
+
             builder.Services.AddControllers();
 
             // // dbcontext
@@ -25,6 +30,9 @@ namespace EcommerceBackEnd
             });
             // // Automapper
             builder.Services.AddAutoMapper(typeof(Program));
+            // // Azure Store service
+            builder.Services.AddTransient<IFileStorage, StoreAzureFiles>();
+
             // // CORS
             builder.Services.AddCors(options =>
             {

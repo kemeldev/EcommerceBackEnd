@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EcommerceBackEnd.DTOs;
 using EcommerceBackEnd.Entity;
+using EcommerceBackEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,12 +13,16 @@ namespace EcommerceBackEnd.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IFileStorage fileStorage;
+        // folder name to store on Azure MUST be LOWERCASE
+        private readonly string container = "shoesfolder";
 
-        // We inyected the context and mapper to the constructor
-        public ShoesController(ApplicationDbContext context, IMapper mapper)
+        // We inyect context,mapper, IfileStore to the constructor
+        public ShoesController(ApplicationDbContext context, IMapper mapper, IFileStorage fileStorage)
         {
             this.context = context;
             this.mapper = mapper;
+            this.fileStorage = fileStorage;
         }
 
         [HttpGet]
@@ -41,9 +46,22 @@ namespace EcommerceBackEnd.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] ShoeCreationDTO shoeCreationDTO)
+        public async Task<ActionResult> Post([FromForm] ShoeCreationDTO shoeCreationDTO)
         {
             var entity = mapper.Map<ShoesEntity>(shoeCreationDTO);
+
+            if (shoeCreationDTO.Photo != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    // extract a byte array from Iformfile
+                    await shoeCreationDTO.Photo.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray();
+                    var extension = Path.GetExtension(shoeCreationDTO.Photo.FileName);
+                    entity.Photo = await fileStorage.SaveFile(content, extension, container, shoeCreationDTO.Photo.ContentType);
+                }
+            }
+
             context.Add(entity);
             await context.SaveChangesAsync();
             var shoeDTO = mapper.Map<ShoeDTO>(entity);
@@ -52,11 +70,33 @@ namespace EcommerceBackEnd.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult> Put(int id, [FromBody] ShoeCreationDTO shoeCreationDTO)
+        public async Task<ActionResult> Put(int id, [FromForm] ShoeCreationDTO shoeCreationDTO)
         {
-            var entity = mapper.Map<ShoesEntity>(shoeCreationDTO);
-            entity.Id = id;
-            context.Entry(entity).State = EntityState.Modified;
+            //this was my original code to Put the shoe, when there was no image
+            //var entity = mapper.Map<ShoesEntity>(shoeCreationDTO);
+            //entity.Id = id;
+            //context.Entry(entity).State = EntityState.Modified;
+
+            var shoeDB = await context.ShoesDBTable.FirstOrDefaultAsync(shoe => shoe.Id == id);
+
+            if (shoeDB == null) return NotFound();
+
+            shoeDB = mapper.Map(shoeCreationDTO, shoeDB);
+
+            if (shoeCreationDTO.Photo != null)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    // extract a byte array from Iformfile
+                    await shoeCreationDTO.Photo.CopyToAsync(memoryStream);
+                    var content = memoryStream.ToArray();
+                    var extension = Path.GetExtension(shoeCreationDTO.Photo.FileName);
+                    shoeDB.Photo = await fileStorage.EditFile(content, extension, container, shoeDB.Photo, shoeCreationDTO.Photo.ContentType);
+
+                    await Console.Out.WriteLineAsync(shoeDB.Photo);
+                }
+            }
+
             await context.SaveChangesAsync();
             return NoContent();
         }

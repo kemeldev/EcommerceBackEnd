@@ -9,5 +9,7 @@ namespace EcommerceBackEnd.DTOs
         [Required]
         [StringLength(50)]
         public string Name { get; set; }
+        // Photo is a string cause we are returning the url where the image is store in our DB
+        public string? Photo { get; set; }
     }
 }
