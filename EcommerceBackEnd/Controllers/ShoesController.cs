@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using EcommerceBackEnd.DTOs;
 using EcommerceBackEnd.Entity;
+using EcommerceBackEnd.Helpers;
 using EcommerceBackEnd.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -26,14 +27,25 @@ namespace EcommerceBackEnd.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<List<ShoeDTO>>> Get()
+        public async Task<ActionResult<List<ShoeDTO>>> Get([FromQuery] PaginationDTO  paginationDTO)
         {
-            var entities = await context.ShoesDBTable.ToListAsync();
+            // queryable to pass it to the Httpcontext extension
+            var queryable = context.ShoesDBTable.AsQueryable();
+            // call the extension method
+            await HttpContext.InsertPaginationParams(queryable, paginationDTO.AmountRecordsPerPage);
+
+            // without Pagination
+            // var entities = await context.ShoesDBTable.ToListAsync();
+
+            // with pagination
+            var entities = await queryable.Paginate(paginationDTO).ToListAsync();
             var dtos = mapper.Map<List<ShoeDTO>>(entities);
 
             return dtos;
 
         }
+
+
 
         [HttpGet("{id:int}", Name = "getShoeRoute")]
         public async Task<ActionResult<ShoeDTO>> Get(int id)
