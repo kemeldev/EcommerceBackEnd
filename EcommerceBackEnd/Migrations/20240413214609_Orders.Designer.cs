@@ -4,6 +4,7 @@ using EcommerceBackEnd;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EcommerceBackEnd.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240413214609_Orders")]
+    partial class Orders
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,41 +60,6 @@ namespace EcommerceBackEnd.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ShoesDBTable");
-                });
-
-            modelBuilder.Entity("EcommerceBackEnd.Entity.ShoesOrdersEntity", b =>
-                {
-                    b.Property<int>("ShoesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("OrderId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("OrdersId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ShoesId", "OrderId");
-
-                    b.HasIndex("OrdersId");
-
-                    b.ToTable("ShoesOrdersDBTable");
-                });
-
-            modelBuilder.Entity("EcommerceBackEnd.Entity.ShoesOrdersEntity", b =>
-                {
-                    b.HasOne("EcommerceBackEnd.Entity.OrdersEntity", "Orders")
-                        .WithMany()
-                        .HasForeignKey("OrdersId");
-
-                    b.HasOne("EcommerceBackEnd.Entity.ShoesEntity", "Shoes")
-                        .WithMany()
-                        .HasForeignKey("ShoesId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Orders");
-
-                    b.Navigation("Shoes");
                 });
 #pragma warning restore 612, 618
         }
