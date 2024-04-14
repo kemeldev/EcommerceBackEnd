@@ -62,6 +62,9 @@ namespace EcommerceBackEnd
                 app.UseSwaggerUI();
             }
 
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
             app.UseHttpsRedirection();
 
             // // Cors policy
