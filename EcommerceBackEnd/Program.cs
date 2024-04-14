@@ -1,4 +1,5 @@
 
+using EcommerceBackEnd.Helpers;
 using EcommerceBackEnd.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -21,7 +22,11 @@ namespace EcommerceBackEnd
 
             // SERVICES
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers(options =>
+            {
+                options.Filters.Add(typeof(ErrorsFilter));
+            });
+                
 
             // // dbcontext
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -34,13 +39,13 @@ namespace EcommerceBackEnd
             builder.Services.AddTransient<IFileStorage, StoreAzureFiles>();
 
             // // CORS
-            builder.Services.AddCors(options =>
-            {
-                options.AddDefaultPolicy(builder =>
-                {
-                    builder.WithOrigins(MyAllowOrigin).AllowAnyMethod().AllowAnyHeader();
-                });
-            });
+            //builder.Services.AddCors(options =>
+            //{
+            //    options.AddDefaultPolicy(builder =>
+            //    {
+            //        builder.WithOrigins(MyAllowOrigin).AllowAnyMethod().AllowAnyHeader();
+            //    });
+            //});
             // // swagger 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
